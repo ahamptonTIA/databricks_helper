@@ -3,6 +3,7 @@ import os, re, math
 from multiprocessing.pool import ThreadPool
 from multiprocessing import cpu_count
 
+import pyspark.dbutils as dbutils
 #----------------------------------------------------------------------------------
 def convert_size(size_bytes):
     if size_bytes == 0:
