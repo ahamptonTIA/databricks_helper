@@ -3,7 +3,6 @@ import os, re, math
 from multiprocessing.pool import ThreadPool
 from multiprocessing import cpu_count
 
-#import pyspark.dbutils as dbutils
 #----------------------------------------------------------------------------------
 def convert_size(size_bytes):
     if size_bytes == 0:
@@ -14,7 +13,7 @@ def convert_size(size_bytes):
     s = round(size_bytes / p, 2)
     return f'{s} : {size_name[i]}'
 #----------------------------------------------------------------------------------
-def get_file_details(dir_path, id_col):
+def get_file_details(dbutils, dir_path, id_col):
     """Function returns a pyspark sql dataframe that details
     the file name, size (bytes), total record counts, and 
     a count by unique values in a field. 
