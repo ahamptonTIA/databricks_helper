@@ -1,13 +1,12 @@
 import os, re
-#import pyspark.dbutils as dbutils
 
 #----------------------------------------------------------------------------------    
 def db_path_to_local(path):
-    """Function returns a local os file path from dbutils file path
+    """Function returns a local os file path from dbfs file path
     Parameters
     ----------
     path : str
-        DataBricks dbutils file storage path
+        DataBricks dbfs file storage path
     Returns
     ----------
     file path: str
@@ -16,7 +15,7 @@ def db_path_to_local(path):
     return re.sub(r'^(dbfs:)', r'/dbfs', path)
 #----------------------------------------------------------------------------------    
 def to_db_path(path):
-    """Function converts a local os file path to a dbutils file path
+    """Function converts a local os file path to a dbfs file path
     Parameters
     ----------
     path : str
@@ -24,17 +23,19 @@ def to_db_path(path):
     Returns
     ----------
     file path: str
-        DataBricks dbutils file storage path
+        DataBricks dbfs file storage path
     """        
     return re.sub(r'^(/dbfs)', r'dbfs:', path)
 #----------------------------------------------------------------------------------    
-def path_exists(path):
-    """Function returns Boolean, true if a DataBricks/dbutils file path exists or
+def path_exists(dbutils, path):
+    """Function returns Boolean, true if a DataBricks/dbfs file path exists or
     false if it does not. 
     Parameters
     ----------
+    dbutils: dbutils object
+        DataBricks notebook dbutils object
     path : str
-        DataBricks dbutils file storage path
+        DataBricks dbfs file storage path
     Returns
     ----------
     Boolean
@@ -48,13 +49,15 @@ def path_exists(path):
         else:
             raise e      
 #----------------------------------------------------------------------------------                    
-def list_file_paths(dir_path, ext='csv', path_type='os'):
+def list_file_paths(dbutils, dir_path, ext='csv', path_type='os'):
     """Function lists files of a given extension type within a 
     given DataBricks/dbfs file path. 
     Parameters
     ----------
+    dbutils: dbutils object
+        DataBricks notebook dbutils object
     dir_path : str
-        DataBricks dbutils file storage path
+        DataBricks dbfs file storage path
     ext : str
         File extension type to search for
         Default, csv
