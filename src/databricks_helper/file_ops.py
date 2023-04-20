@@ -1,5 +1,5 @@
 import os, re, math, uuid
-
+import hashlib
 from tqdm import tqdm
 from multiprocessing.pool import ThreadPool
 from multiprocessing import cpu_count
@@ -25,6 +25,24 @@ def get_byte_units(size_bytes):
     p = math.pow(1024, i)
     s = round(size_bytes / p, 2)
     return f'{s} : {size_name[i]}'
+#----------------------------------------------------------------------------------
+def get_md5_hash(file):
+    """Function reads a file to generate an md5 hash.
+    See hashlib.md5() for full documentation.
+    Parameters
+    ----------
+    file : str
+        String file path
+    Returns
+    ----------
+    str :
+        String md5 hash string
+    """    
+    with open(file_path, "rb") as f:
+        f_hash = hashlib.md5()
+        while chunk := f.read(8192):
+            f_hash.update(chunk)
+    return f_hash.hexdigest() 
 #----------------------------------------------------------------------------------
 def get_file_details(dbutils, dir_path, id_col,spark=None):
     """Function returns a pyspark sql dataframe that details
@@ -58,8 +76,9 @@ def get_file_details(dbutils, dir_path, id_col,spark=None):
                 file_name STRING, 
                 file_size_bytes LONG,
                 file_size_memory_unit STRING, 
-                record_qty LONG, 
-                {id_col}_qty LONG
+                record_qty LONG,
+                {id_col}_qty LONG,
+                file_md5_hash STRING,
               """     
     data = []
 
@@ -76,7 +95,8 @@ def get_file_details(dbutils, dir_path, id_col,spark=None):
                         f.size,
                         get_byte_units(int(f.size)),                      
                         sdf.count(),
-                        sdf.select(id_col).distinct().count()
+                        sdf.select(id_col).distinct().count(),
+                        get_md5_hash(f.path)
                       )
                     )
     df = spark.createDataFrame(data=data,schema=schema)
