@@ -24,16 +24,12 @@ setuptools.setup(
                         'License :: OSI Approved :: MIT License',
                         'Operating System :: OS Independent',
                         'Natural Language :: English',
-                        'Programming Language :: Python :: 3.9',
+                        'Programming Language :: Python :: 3.7',
                         ],                                      
-    python_requires='>=3.9',                # minimum version requirement of the package
+    python_requires='>=3.7',                # minimum version requirement of the package
     py_modules=['databricks_helper'],       # name of the python package
     package_dir={'':'src'},                 # directory of the source code of the package
     install_requires=[                      # package dependencies
-                        'pyspark>=3.3.0',
-                        #'re>=2.2.1', 
-                        #'os',
-                        #'multiprocessing',
-                        #'math'
+                        'pyspark>=3.3.0'
                     ]
     )
