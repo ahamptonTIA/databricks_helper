@@ -73,11 +73,11 @@ def list_file_paths(dir_path, ext='csv', path_type='os'):
         if not path_exists(dir_path):
             print(f'Directory not found: {dir_path}')
             return []
-        if path_type=='os:
+        if path_type =='os':
             fps = [db_path_to_local(f.path) 
                     for f in dbutils.fs.ls(dir_path) 
                     if ((f.path).lower()).endswith(f'.{ext.lower()}')]
-        elif path_type=='dbfs:
+        elif path_type =='dbfs':
             fps = [f.path 
                     for f in dbutils.fs.ls(dir_path) 
                     if ((f.path).lower()).endswith(f'.{ext.lower()}')]
