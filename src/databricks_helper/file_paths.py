@@ -73,7 +73,7 @@ def list_file_paths(dbutils, dir_path, ext='csv', path_type='os'):
         List of file paths
     """      
     try:
-        if not path_exists(dir_path):
+        if not path_exists(dbutils, dir_path):
             print(f'Directory not found: {dir_path}')
             return []
         if path_type =='os':
