@@ -5,7 +5,19 @@ from multiprocessing.pool import ThreadPool
 from multiprocessing import cpu_count
 
 #----------------------------------------------------------------------------------
-def convert_size(size_bytes):
+def get_byte_units(size_bytes):
+    """Function converts bytes into the largest 
+    possible unit of measure 
+    Parameters
+    ----------
+    size_bytes: int
+        numeric of bytes
+    Returns
+    ----------
+    str :
+        String representing the valueand largest unit size
+        Ex. '200 : GB'
+    
     if size_bytes == 0:
         return '0 : B'
     size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
@@ -62,7 +74,7 @@ def get_file_details(dbutils, dir_path, id_col,spark=None):
                       (
                         f.name,
                         f.size,
-                        convert_size(int(f.size)),                      
+                        get_byte_units(int(f.size)),                      
                         sdf.count(),
                         sdf.select(id_col).distinct().count()
                       )
