@@ -38,7 +38,7 @@ def get_md5_hash(file):
     str :
         String md5 hash string
     """    
-    with open(file_path, "rb") as f:
+    with open(file, "rb") as f:
         f_hash = hashlib.md5()
         while chunk := f.read(8192):
             f_hash.update(chunk)
