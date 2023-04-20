@@ -20,13 +20,13 @@ def get_file_details(dbutils, dir_path, id_col):
 
     Parameters
     ----------
+    dbutils: dbutils object
+        DataBricks notebook dbutils object
     dir_path : str
         DataBricks file storage path
-
     id_col : str
         Column name for a column that holds an ID or
         set of values to count distinct values of. 
-
     Returns
     ----------
     df: pyspark.sql.dataframe.DataFrame
@@ -34,8 +34,6 @@ def get_file_details(dbutils, dir_path, id_col):
         size (bytes), total record counts, and 
         a count by unique values in a field.
     """
-    
-    
     schema = f"""
                 file_name STRING, 
                 file_size_bytes LONG,
