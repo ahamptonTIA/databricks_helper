@@ -28,7 +28,7 @@ setuptools.setup(
                         ],                                      
     python_requires='>=3.7',                # minimum version requirement of the package
     py_modules=['databricks_helper'],       # name of the python package
-    package_dir={'':'src'},                 # directory of the source code of the package
+    package_dir={'src':'src'},                 # directory of the source code of the package
     install_requires=[                      # package dependencies
                         'pyspark>=3.3.0'
                     ]
