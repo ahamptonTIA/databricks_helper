@@ -31,9 +31,9 @@ setuptools.setup(
     package_dir={'':'src'},                 # directory of the source code of the package
     install_requires=[                      # package dependencies
                         'pyspark>=3.3.0',
-                        're>=2.2.1', 
-                        'os',
-                        'multiprocessing',
-                        'math'
+                        #'re>=2.2.1', 
+                        #'os',
+                        #'multiprocessing',
+                        #'math'
                     ]
     )
