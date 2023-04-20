@@ -18,7 +18,7 @@ setuptools.setup(
         ''',
     long_description=long_description,      # long description read from the the readme file
     long_description_content_type='text/markdown',
-    packages=setuptools.find_packages(),    # list of all python modules to be installed
+    packages=setuptools.find_packages(where="src"), # list of all python modules to be installed
     classifiers=[                           # information to filter the project on PyPi website
                         'Programming Language :: Python :: 3',
                         'License :: OSI Approved :: MIT License',
@@ -27,9 +27,9 @@ setuptools.setup(
                         'Programming Language :: Python :: 3.7',
                         ],                                      
     python_requires='>=3.7',                # minimum version requirement of the package
-    py_modules=['databricks_helper'],       # name of the python package     
-    package_dir={'src':'src'},              # directory of the source code of the package
+    #py_modules=['databricks_helper'],       # name of the python package     
+    package_dir={'':'src'},                 # directory of the source code of the package
     install_requires=[                      # package dependencies
-                        'pyspark>=3.3.0'
+                        'pyspark=3.3.0'
                     ]
     )
