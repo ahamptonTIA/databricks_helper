@@ -4,6 +4,8 @@ from tqdm import tqdm
 from multiprocessing.pool import ThreadPool
 from multiprocessing import cpu_count
 
+from databricks_helper import file_paths as dbH_fp
+
 #----------------------------------------------------------------------------------
 def get_byte_units(size_bytes):
     """Function converts bytes into the largest 
@@ -88,7 +90,7 @@ def get_file_details(dbutils, dir_path, id_col,spark=None):
     for f in tqdm(files, desc="Evaluating Files..."):
         sdf = spark.read.csv(f.path,
                               header=True)
-
+        os_fp = dbH_fp.db_path_to_local(f.path)
         data.append(
                       (
                         f.name,
@@ -96,7 +98,7 @@ def get_file_details(dbutils, dir_path, id_col,spark=None):
                         get_byte_units(int(f.size)),                      
                         sdf.count(),
                         sdf.select(id_col).distinct().count(),
-                        get_md5_hash(f.path)
+                        get_md5_hash(os_fp)
                       )
                     )
     df = spark.createDataFrame(data=data,schema=schema)
