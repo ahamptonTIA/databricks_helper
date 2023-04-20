@@ -1,5 +1,5 @@
-import os, re, math, tqdm, uuid
-
+import os, re, math
+from tqdm import tqdm
 from multiprocessing.pool import ThreadPool
 from multiprocessing import cpu_count
 
@@ -13,7 +13,7 @@ def convert_size(size_bytes):
     s = round(size_bytes / p, 2)
     return f'{s} : {size_name[i]}'
 #----------------------------------------------------------------------------------
-def get_file_details(dbutils, dir_path, id_col,spark=None):
+def get_file_details(dbutils, dir_path, id_col):
     """Function returns a pyspark sql dataframe that details
     the file name, size (bytes), total record counts, and 
     a count by unique values in a field. 
@@ -34,11 +34,7 @@ def get_file_details(dbutils, dir_path, id_col,spark=None):
         size (bytes), total record counts, and 
         a count by unique values in a field.
     """
-    
-    if not spark:
-        from pyspark.sql import SparkSession
-        spark = SparkSession.builder.appName(uuid.uuid4().hex).getOrCreate()
-        
+      
     schema = f"""
                 file_name STRING, 
                 file_size_bytes LONG,
