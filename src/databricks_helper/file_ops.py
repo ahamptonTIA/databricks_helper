@@ -80,7 +80,7 @@ def get_file_details(dbutils, dir_path, id_col,spark=None):
                 file_size_memory_unit STRING, 
                 record_qty LONG,
                 {id_col}_qty LONG,
-                file_md5_hash STRING,
+                file_md5_hash STRING
               """     
     data = []
 
