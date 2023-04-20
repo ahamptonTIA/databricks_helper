@@ -3,6 +3,67 @@ import os, re, math
 from multiprocessing.pool import ThreadPool
 from multiprocessing import cpu_count
 
+#----------------------------------------------------------------------------------
+def convert_size(size_bytes):
+    if size_bytes == 0:
+        return '0 : B'
+    size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+    i = int(math.floor(math.log(size_bytes, 1024)))
+    p = math.pow(1024, i)
+    s = round(size_bytes / p, 2)
+    return f'{s} : {size_name[i]}'
+#----------------------------------------------------------------------------------
+def get_file_details(dir_path, id_col):
+    """Function returns a pyspark sql dataframe that details
+    the file name, size (bytes), total record counts, and 
+    a count by unique values in a field. 
+
+    Parameters
+    ----------
+    dir_path : str
+        DataBricks file storage path
+
+    id_col : str
+        Column name for a column that holds an ID or
+        set of values to count distinct values of. 
+
+    Returns
+    ----------
+    df: pyspark.sql.dataframe.DataFrame
+        Dataframe that details the file name, 
+        size (bytes), total record counts, and 
+        a count by unique values in a field.
+    """
+    
+    
+    schema = f"""
+                file_name STRING, 
+                file_size_bytes LONG,
+                file_size_memory_unit STRING, 
+                record_qty LONG, 
+                {id_col}_qty LONG
+              """     
+    data = []
+
+    files = dbutils.fs.ls(dir_path)
+    file_cnt = len(files)
+    
+    for f in tqdm(files, desc="Evaluating Files..."):
+        sdf = spark.read.csv(f.path,
+                              header=True)
+
+        data.append(
+                      (
+                        f.name,
+                        f.size,
+                        convert_size(int(f.size)),                      
+                        sdf.count(),
+                        sdf.select(id_col).distinct().count()
+                      )
+                    )
+    df = spark.createDataFrame(data=data,schema=schema)
+    
+    return(df)
 #---------------------------------------------------------------------------------- 
 def regex_file_pattern_sub(file, sub_dict):
     """Function searches a file for regex string pattern matches
