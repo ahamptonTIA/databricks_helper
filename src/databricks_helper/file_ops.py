@@ -1,4 +1,4 @@
-import os, re, math
+import os, re, math, tqdm
 
 from multiprocessing.pool import ThreadPool
 from multiprocessing import cpu_count
