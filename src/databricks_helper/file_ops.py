@@ -69,11 +69,14 @@ def get_csv_file_details(dbutils, file_path, id_col, spark=None):
         from pyspark.sql import SparkSession
         spark = SparkSession.builder.appName(uuid.uuid4().hex).getOrCreate()
 
-    # get a dbruntime.dbutils.FileInfo object
-    f = dbutils.fs.ls(file_path)
-
+    # ensure dbfs file path
+    file_path = dbfs_path.to_dbfs_path(file_path)
+ 
     # get the local/os file path
     os_fp = dbfs_path.db_path_to_local(f.path)
+    
+    # get a dbruntime.dbutils.FileInfo object
+    f = dbutils.fs.ls(file_path)
 
     # get date time file metadata
     statinfo = os.stat(os_fp)
