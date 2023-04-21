@@ -14,7 +14,7 @@ def db_path_to_local(path):
     """    
     return re.sub(r'^(dbfs:)', r'/dbfs', path)
 #----------------------------------------------------------------------------------    
-def to_db_path(path):
+def to_dbfs_path(path):
     """Function converts a local os file path to a dbfs file path
     Parameters
     ----------
