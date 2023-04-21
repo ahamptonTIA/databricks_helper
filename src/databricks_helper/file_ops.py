@@ -73,7 +73,7 @@ def get_csv_file_details(dbutils, file_path, id_col, spark=None):
     file_path = dbfs_path.to_dbfs_path(file_path)
  
     # get the local/os file path
-    os_fp = dbfs_path.db_path_to_local(f.path)
+    os_fp = dbfs_path.db_path_to_local(file_path)
     
     # get a dbruntime.dbutils.FileInfo object
     f = dbutils.fs.ls(file_path)
@@ -98,6 +98,53 @@ def get_csv_file_details(dbutils, file_path, id_col, spark=None):
                     'modified' : modified_date
                 }    
     return file_meta 
+#---------------------------------------------------------------------------------- 
+def get_csv_file_details_mcp(dbutils, files, id_col, n_cores=None, spark=None):   
+    """Function uses multi-core processing to call regex_file_pattern_sub.
+    See regex_file_pattern_sub documentation.
+    Parameters
+    ----------
+     dbutils: dbutils object
+        DataBricks notebook dbutils object   
+    files : list
+        List of string csv file paths
+    id_col : str
+        Column name for a column that holds an ID or
+        set of values to count distinct values of. 
+    n_cores : int
+        Number of cores to use.  Will not exceed 85% of 
+        available cores.
+        Default, < 85% of the total cores available      
+    spark : spark session object
+        Defualt, in not supplied a new session will be built
+    Returns
+    ----------
+    list of dictionaries
+        Dictionary where the key is the file path and the value
+        is a nested dictionary of the match patterns, substituted 
+        value, and a count of matches.
+        The dictionary can be used to track file modifications. 
+        [{file_path1: {pattern : substitution, count}}]
+    """     
+
+    max_cores = math.floor(cpu_count() * 0.85)
+    if not n_cores:
+        n_cores = max_cores
+    elif n_cores > max_cores:
+        n_cores = max_cores
+
+    print(f"Using {n_cores} cores's of {cpu_count()}")
+    pool = ThreadPool(n_cores)
+    
+    task_params = [(dbutils, f, id_col, spark) for f in files]
+    try:
+        result = pool.starmap(get_csv_file_details, task_params)
+        pool.close()
+        pool.join()
+    except Exception as e:
+        print(f'Error: {e}')
+        pool.terminate()
+    return result
 #---------------------------------------------------------------------------------- 
 def regex_file_pattern_sub(file, sub_dict):
     """Function searches a file for regex string pattern matches
@@ -184,53 +231,6 @@ def regex_file_pattern_sub_mcp(files, sub_dict, n_cores=None):
     task_params = [(f, sub_dict) for f in files]
     try:
         result = pool.starmap(regex_file_pattern_sub, task_params)
-        pool.close()
-        pool.join()
-    except Exception as e:
-        print(f'Error: {e}')
-        pool.terminate()
-    return result
-#---------------------------------------------------------------------------------- 
-def get_csv_file_details_mcp(dbutils, files, id_col, n_cores=None, spark=None):   
-    """Function uses multi-core processing to call regex_file_pattern_sub.
-    See regex_file_pattern_sub documentation.
-    Parameters
-    ----------
-     dbutils: dbutils object
-        DataBricks notebook dbutils object   
-    files : list
-        List of string csv file paths
-    id_col : str
-        Column name for a column that holds an ID or
-        set of values to count distinct values of. 
-    n_cores : int
-        Number of cores to use.  Will not exceed 85% of 
-        available cores.
-        Default, < 85% of the total cores available      
-    spark : spark session object
-        Defualt, in not supplied a new session will be built
-    Returns
-    ----------
-    list of dictionaries
-        Dictionary where the key is the file path and the value
-        is a nested dictionary of the match patterns, substituted 
-        value, and a count of matches.
-        The dictionary can be used to track file modifications. 
-        [{file_path1: {pattern : substitution, count}}]
-    """     
-
-    max_cores = math.floor(cpu_count() * 0.85)
-    if not n_cores:
-        n_cores = max_cores
-    elif n_cores > max_cores:
-        n_cores = max_cores
-
-    print(f"Using {n_cores} cores's of {cpu_count()}")
-    pool = ThreadPool(n_cores)
-    
-    task_params = [(dbutils, f, id_col, spark) for f in files]
-    try:
-        result = pool.starmap(get_csv_file_details, task_params)
         pool.close()
         pool.join()
     except Exception as e:
