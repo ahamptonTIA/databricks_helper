@@ -98,6 +98,9 @@ def list_sub_dirs(dbutils, dir_path, recursive=False):
         DataBricks notebook dbutils object
     dir_path : str
         DataBricks dbfs file storage path
+    recursive : Boolean
+        Boolean value for recursively list sub directories
+        Default, False 
     Returns
     ----------
     sub_dirs : list
@@ -107,5 +110,6 @@ def list_sub_dirs(dbutils, dir_path, recursive=False):
                 if p.isDir() and p.path != dir_path]
     if recursive:
         for sd in sub_dirs:
-            sub_dirs = sub_dirs + list_sub_dirs(dbutils, sd)
+            sub_dirs = sub_dirs + list_sub_dirs(dbutils, sd, recursive)
     return sorted(sub_dirs)
+#---------------------------------------------------------------------------------- 
