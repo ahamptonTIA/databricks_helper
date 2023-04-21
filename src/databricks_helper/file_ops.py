@@ -76,7 +76,7 @@ def get_csv_file_details(dbutils, file_path, id_col, spark=None):
     os_fp = dbfs_path.db_path_to_local(file_path)
     
     # get a dbruntime.dbutils.FileInfo object
-    f = dbutils.fs.ls(file_path)
+    f = dbutils.fs.ls(file_path)[0]
 
     # get date time file metadata
     statinfo = os.stat(os_fp)
