@@ -194,7 +194,7 @@ def regex_file_pattern_sub(file, sub_dict):
             # if match found in file, replace with substring
             if l_cnt > 1:
                 matched.append({k : {'substitution':v, 'count' : l_cnt}})
-                print(f'\t\t-Found {l_cnt} with patterns matching {k} in {file}')
+                print(f'\t\t-Found {l_cnt} patterns matching {k} in {file}')
 
                 #Only modify strings in files that match the replace pattern(s)
                 print(f'\t\t\t-Replacing ({k}) with ({v}) in {file}\n')
