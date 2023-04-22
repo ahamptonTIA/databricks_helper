@@ -5,6 +5,14 @@ from multiprocessing.pool import ThreadPool
 from multiprocessing import cpu_count
 
 from databricks_helper import dbfs_path
+
+SPARK_SESSION = None
+
+def set_spark_session():
+    from pyspark.sql import SparkSession
+    if not SPARK_SESSION:
+        global SPARK_SESSION
+        SPARK_SESSION = SparkSession.builder.appName(uuid.uuid4().hex).getOrCreate()
 #----------------------------------------------------------------------------------
 def get_byte_units(size_bytes):
     """Function converts bytes into the largest 
@@ -66,9 +74,9 @@ def get_csv_file_details(dbutils, file_path, id_col, spark=None):
         dictionary of file metadata
     """
     if not spark:
-        from pyspark.sql import SparkSession
-        spark = SparkSession.builder.appName(uuid.uuid4().hex).getOrCreate()
-
+        set_spark_session()
+        spark = SPARK_SESSION
+        
     # ensure dbfs file path
     file_path = dbfs_path.to_dbfs_path(file_path)
  
@@ -135,7 +143,11 @@ def get_csv_file_details_mcp(dbutils, files, id_col, n_cores=None, spark=None):
 
     print(f"Using {n_cores} cores's of {cpu_count()}")
     pool = ThreadPool(n_cores)
-    
+
+    if not spark:
+        set_spark_session()
+        spark = SPARK_SESSION
+        
     task_params = [(dbutils, f, id_col, spark) for f in files]
     try:
         result = pool.starmap(get_csv_file_details, task_params)
