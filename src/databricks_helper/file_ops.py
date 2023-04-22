@@ -6,12 +6,12 @@ from multiprocessing import cpu_count
 
 from databricks_helper import dbfs_path
 
+global SPARK_SESSION
 SPARK_SESSION = None
 
 def set_spark_session():
     from pyspark.sql import SparkSession
     if not SPARK_SESSION:
-        global SPARK_SESSION
         SPARK_SESSION = SparkSession.builder.appName(uuid.uuid4().hex).getOrCreate()
 #----------------------------------------------------------------------------------
 def get_byte_units(size_bytes):
