@@ -61,7 +61,6 @@ def get_md5_hash(file):
 def get_csv_file_details(dbutils, file_path, id_col, spark=None):
     """Function returns a dictionary that details
     general metadata for a csv file
-
     Parameters
     ----------
     dbutils: dbutils object
@@ -149,9 +148,9 @@ def get_csv_file_details_mcp(dbutils, files, id_col, n_cores=None, spark=None):
     pool = ThreadPool(n_cores)
 
     if not spark:
-        spark = get_spark_session()
-        
-    task_params = [(dbutils, f, id_col, spark) for f in files]
+        task_params = [(dbutils, f, id_col, get_spark_session()) for f in files]
+    else:
+        task_params = [(dbutils, f, id_col, spark) for f in files]
     try:
         result = pool.starmap(get_csv_file_details, task_params)
         pool.close()
