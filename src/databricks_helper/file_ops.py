@@ -6,7 +6,17 @@ from multiprocessing import cpu_count
 from pyspark.sql import SparkSession
 from databricks_helper import dbfs_path
 
+#----------------------------------------------------------------------------------
 def get_spark_session():
+    """Function creates a new spark session
+    with a unique app id.
+    Parameters
+    ----------
+    None:
+    Returns
+    ----------
+    spark session
+    """        
     return SparkSession.builder.appName(uuid.uuid4().hex).getOrCreate()
 #----------------------------------------------------------------------------------
 def get_byte_units(size_bytes):
@@ -138,10 +148,10 @@ def get_csv_file_details_mcp(dbutils, files, id_col, n_cores=None, spark=None):
     print(f"Using {n_cores} cores's of {cpu_count()}")
     pool = ThreadPool(n_cores)
 
-#     if not spark:
-#         spark = get_spark_session()
+    if not spark:
+        spark = get_spark_session()
         
-    task_params = [(dbutils, f, id_col, get_spark_session()) for f in files]
+    task_params = [(dbutils, f, id_col, spark) for f in files]
     try:
         result = pool.starmap(get_csv_file_details, task_params)
         pool.close()
