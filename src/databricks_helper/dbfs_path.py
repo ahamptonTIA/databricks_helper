@@ -41,6 +41,7 @@ def path_exists(dbutils, path):
     Boolean
     """            
     try:
+        path = to_dbfs_path(path)
         dbutils.fs.ls(path)
         return True
     except Exception as e:
