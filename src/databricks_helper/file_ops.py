@@ -103,6 +103,7 @@ def get_csv_file_details(dbutils, file_path, id_col, spark=None):
                     'file_size_bytes': f'{f.size:,}',
                     'file_size_memory_unit': get_byte_units(int(f.size)),
                     'record_qty': f'{sdf.count():,}',   
+                    'column_qty': f'{len(sdf.columns):,}',   
                     f'{id_col}_qty': f'{sdf.select(id_col).distinct().count():,}',
                     'file_md5_hash': get_md5_hash(os_fp),
                     'created' : create_date,
