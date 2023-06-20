@@ -12,6 +12,8 @@ def db_path_to_local(path):
     file path: str
         local os file path
     """    
+    if path.startswith(r'/mnt'):
+        path = f"{r'/dbfs'}{path}"
     return re.sub(r'^(dbfs:)', r'/dbfs', path)
 #----------------------------------------------------------------------------------    
 def to_dbfs_path(path):
@@ -25,7 +27,9 @@ def to_dbfs_path(path):
     file path: str
         DataBricks dbfs file storage path
     """        
-    return re.sub(r'^(/dbfs)', r'dbfs:', path)
+    if path.startswith(r'/mnt'):
+        path = f"{r'dbfs:'}{path}"        
+    return re.sub(r'^(/dbfs)', r'dbfs:', path)   
 #----------------------------------------------------------------------------------    
 def path_exists(dbutils, path):
     """Function returns Boolean, true if a DataBricks/dbfs file path exists or
