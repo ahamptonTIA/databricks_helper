@@ -253,3 +253,55 @@ def regex_file_pattern_sub_mcp(files, sub_dict, n_cores=None):
         pool.terminate()
     return result
 #---------------------------------------------------------------------------------- 
+def sql_query_to_csv(sql_str, out_dir, out_name, compression=None):
+    """Takes a Spark SQL query and exports the results 
+    to a single csv file. Use when the outputs are expected
+    to be relatively small summary tables.  As an added option,
+    the results can be compressed for more efficient data storage.
+    See the compression options in the parameters. 
+    Parameters
+    ----------
+    sql_str: str
+        Spark SQL query string
+    out_dir : str
+        DataBricks folder/directory path 
+    out_name : str
+        output name of the file
+    compression : str, optional
+        Optional output compression type.  Valid types include
+        pandas native compression types: 
+                                        ‘gz’, ‘bz2’, ‘zip’, ‘xz’, 
+                                        ‘zst’, ‘tar’, ‘tar.gz’, 
+                                        ‘tar.xz’ or ‘tar.bz2’
+        Default, None - no compression
+    Returns
+    ----------
+    out_file: str
+        string representing the output file path
+    """
+
+    # create a spark dataframe of the results given an sql query
+    s_df = spark.sql(sql_str)
+
+    
+    # get the local/os file path
+    out_dir = dbfs_path.db_path_to_local(out_dir)
+    ext = '.csv'
+    # remove extra file extensions 
+    if out_name.endswith(ext):
+        out_name = ''.join([x for x in out_name.split(ext) if bool(x)])
+    # set the compression type in the path if specified
+    if compression: 
+        ext = f'{ext}.{compression}'
+
+    # set the ouput file path
+    out_file = f'{out_dir}/{out_name}{ext}'
+
+    # convert the spark dataframe to a pandas dataframe
+    p_df = s_df.toPandas()
+
+    # export the results
+    p_df.to_csv(out_file, index=False, compression='infer', chunksize=250000)
+
+    return out_file
+#---------------------------------------------------------------------------------- 
