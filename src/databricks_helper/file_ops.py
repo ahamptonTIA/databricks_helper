@@ -318,7 +318,7 @@ def export_dataframe(in_df, out_dir, out_name, file_type='csv'):
 
     return file_path
 #---------------------------------------------------------------------------------- 
-def sql_query_to_file(sql_str, out_dir, out_name, file_type='csv'):
+def sql_query_to_file(spark, sql_str, out_dir, out_name, file_type='csv'):
     """Takes a Spark SQL query and exports the results 
     to a single file ('csv', 'json', 'html', 
                           'pickle', 'pkl', or 'parquet'). 
