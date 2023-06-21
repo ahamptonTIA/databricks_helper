@@ -129,7 +129,9 @@ def create_dir(dbutils, out_dir):
     ----------
     out_dir : Boolean
         True if the directory was created or exists
-    """    
+    """ 
+    out_dir = to_dbfs_path(out_dir)
+    
     try: 
         if not path_exists(dbutils, out_dir):
             dbutils.fs.mkdirs(out_dir)
