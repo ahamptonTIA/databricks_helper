@@ -1,5 +1,6 @@
 import os, re, math, uuid
 import hashlib
+import pandas as pd
 from datetime import datetime, timezone
 from multiprocessing.pool import ThreadPool
 from multiprocessing import cpu_count
