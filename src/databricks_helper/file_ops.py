@@ -292,7 +292,7 @@ def export_dataframe(in_df, out_dir, out_name, file_type='csv'):
         df = in_df
 
     # get the api/os file path
-    out_dir = dh.dbfs_path.db_path_to_local(out_dir)
+    out_dir = dbfs_path.db_path_to_local(out_dir)
 
     # remove all extra file extensions 
     if out_name.endswith(file_type):
