@@ -26,10 +26,11 @@ setuptools.setup(
                         'Programming Language :: Python :: 3.7',
                         ],                                      
     python_requires='>=3.7',                # minimum version requirement of the package
-    #py_modules=['databricks_helper'],       # name of the python package     
+    #py_modules=['databricks_helper'],      # name of the python package     
     package_dir={'':'src'},                 # directory of the source code of the package
     packages=setuptools.find_packages(where="src"), # list of all python modules to be installed
-    install_requires=[                      # package dependencies
+    install_requires=['openpyxl',           # package dependencies
+                      'pandas'                     
 
                     ]
     )
