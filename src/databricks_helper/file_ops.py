@@ -348,7 +348,7 @@ def sql_query_to_file(spark, sql_str, out_dir, out_name, file_type='csv'):
     s_df = spark.sql(sql_str)
 
     # export the results
-    out_file = export_dataframe(in_df=p_df, 
+    out_file = export_dataframe(in_df=s_df, 
                                 out_dir=out_dir, 
                                 out_name=out_name, 
                                 file_type=file_type)
