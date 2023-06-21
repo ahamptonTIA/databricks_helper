@@ -253,12 +253,77 @@ def regex_file_pattern_sub_mcp(files, sub_dict, n_cores=None):
         pool.terminate()
     return result
 #---------------------------------------------------------------------------------- 
-def sql_query_to_csv(sql_str, out_dir, out_name, compression=None):
+def export_dataframe(in_df, out_dir, out_name, file_type='csv'):
+    """
+    Export a Pandas DataFrame to a single file in the specified 
+    file format. This is an alternative to the spark folder and
+    split multi-file structure.  The aim is to make the files
+    easier to work with outside of databricks. 
+    
+    Parameters
+    ----------
+    in_df : Pandas DataFrame
+        Pandas DataFrame to export.
+    out_dir : str, optional
+        Output directory path 
+    out_name : str
+        Output file name
+    file_type : str
+        Output file type name
+        Allowed file types: 
+                          'csv', 'json', 'html', 
+                          'pickle', 'pkl', 'parquet'  
+    Returns
+    -------
+    file_path : str
+        Full file path of the exported file
+
+    Raises
+    ------
+    ValueError
+    If the file type is invalid.
+
+    """
+
+    if not isinstance(in_df, pd.DataFrame):
+        # convert the spark dataframe to a pandas dataframe
+        df = in_df.toPandas()
+    else:
+        df = in_df
+
+    # get the api/os file path
+    out_dir = dh.dbfs_path.db_path_to_local(out_dir)
+
+    # remove all extra file extensions 
+    if out_name.endswith(file_type):
+        out_name = ''.join([x for x in out_name.split(file_type) if bool(x)])
+
+    # set the file path
+    out_name = f'{out_name}.{file_type}'
+    file_path = os.path.join(out_dir, out_name)
+
+    if file_type == "csv":
+        df.to_csv(file_path, index=False, chunksize=250000)
+    elif file_type == "json":
+        df.to_json(file_path)
+    elif file_type == "html":
+        df.to_html(file_path, index=False)
+    elif file_type == "pickle" or file_type == "pkl" :
+        df.to_pickle(file_path)
+    elif file_type == "parquet":
+        df.to_parquet(file_path, index=False)
+    else:
+        raise ValueError("Invalid file type: " + file_type)
+
+    return file_path
+#---------------------------------------------------------------------------------- 
+def sql_query_to_file(sql_str, out_dir, out_name, file_type='csv'):
     """Takes a Spark SQL query and exports the results 
-    to a single csv file. Use when the outputs are expected
-    to be relatively small summary tables.  As an added option,
-    the results can be compressed for more efficient data storage.
-    See the compression options in the parameters. 
+    to a single file ('csv', 'json', 'html', 
+                          'pickle', 'pkl', or 'parquet'). 
+    Use this method when the outputs are expected
+    to be relatively small summary tables.  Otherwise, use 
+    the native spark methods. 
     Parameters
     ----------
     sql_str: str
@@ -267,13 +332,11 @@ def sql_query_to_csv(sql_str, out_dir, out_name, compression=None):
         DataBricks folder/directory path 
     out_name : str
         output name of the file
-    compression : str, optional
-        Optional output compression type.  Valid types include
-        pandas native compression types: 
-                                        ‘gz’, ‘bz2’, ‘zip’, ‘xz’, 
-                                        ‘zst’, ‘tar’, ‘tar.gz’, 
-                                        ‘tar.xz’ or ‘tar.bz2’
-        Default, None - no compression
+    file_type : str
+        Output file type name
+        Allowed file types: 
+                          'csv', 'json', 'html', 
+                          'pickle', 'pkl', 'parquet'  
     Returns
     ----------
     out_file: str
@@ -283,25 +346,10 @@ def sql_query_to_csv(sql_str, out_dir, out_name, compression=None):
     # create a spark dataframe of the results given an sql query
     s_df = spark.sql(sql_str)
 
-    
-    # get the local/os file path
-    out_dir = dbfs_path.db_path_to_local(out_dir)
-    ext = '.csv'
-    # remove extra file extensions 
-    if out_name.endswith(ext):
-        out_name = ''.join([x for x in out_name.split(ext) if bool(x)])
-    # set the compression type in the path if specified
-    if compression: 
-        ext = f'{ext}.{compression}'
-
-    # set the ouput file path
-    out_file = f'{out_dir}/{out_name}{ext}'
-
-    # convert the spark dataframe to a pandas dataframe
-    p_df = s_df.toPandas()
-
     # export the results
-    p_df.to_csv(out_file, index=False, compression='infer', chunksize=250000)
-
+    out_file = export_dataframe(in_df=p_df, 
+                                out_dir=out_dir, 
+                                out_name=out_name, 
+                                file_type=file_type)
     return out_file
 #---------------------------------------------------------------------------------- 
