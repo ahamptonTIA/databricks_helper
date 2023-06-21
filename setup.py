@@ -29,8 +29,8 @@ setuptools.setup(
     #py_modules=['databricks_helper'],      # name of the python package     
     package_dir={'':'src'},                 # directory of the source code of the package
     packages=setuptools.find_packages(where="src"), # list of all python modules to be installed
-    install_requires=['openpyxl',           # package dependencies
-                      'pandas==1.5.3'                     
+    install_requires=[           # package dependencies
+                     
 
                     ]
     )
