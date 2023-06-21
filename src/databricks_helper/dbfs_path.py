@@ -119,3 +119,23 @@ def list_sub_dirs(dbutils, dir_path, recursive=False):
             sub_dirs = sub_dirs + list_sub_dirs(dbutils, sd, recursive)
     return sorted(sub_dirs)
 #---------------------------------------------------------------------------------- 
+def create_dir(dbutils, out_dir):
+    """Function creates a directory if it does not exist. 
+    Parameters
+    ----------
+    out_dir: str
+        DataBricks dbfs file storage path 
+    Returns
+    ----------
+    out_dir : Boolean
+        True if the directory was created or exists
+    """    
+    try: 
+        if not path_exists(dbutils, out_dir):
+            dbutils.fs.mkdirs(out_dir)
+            print(f'Created directory: {out_dir}')
+        else:
+            print(f'Directory already exists: {out_dir}')
+        return True
+    except:
+        return False
