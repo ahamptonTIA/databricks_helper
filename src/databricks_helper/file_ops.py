@@ -392,6 +392,6 @@ def upsert_csv(df, output_path, upsert_columns):
         existing_df.drop_duplicates(subset=upsert_columns, inplace=True)
 
         # Write the merged DataFrame to the CSV file
-        existing_df.to_csv(output_path)
+        existing_df.to_csv(output_path, ignore_index=True)
     return(output_path)
 #---------------------------------------------------------------------------------- 
