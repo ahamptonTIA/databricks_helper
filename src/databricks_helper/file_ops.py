@@ -111,7 +111,7 @@ def get_csv_file_details(dbutils, file_path, id_col, header=True, spark=None):
                     'modified' : modified_date
                 }    
 
-    if bool(id_col) and header=True:
+    if bool(id_col) and header:
         file_meta[f'{id_col}_qty'] = f'{sdf.select(id_col).distinct().count():,}'
     return file_meta 
 #---------------------------------------------------------------------------------- 
