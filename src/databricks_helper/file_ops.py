@@ -59,7 +59,7 @@ def get_md5_hash(file):
             f_hash.update(chunk)
     return f_hash.hexdigest() 
 #----------------------------------------------------------------------------------
-def get_csv_file_details(dbutils, file_path, id_col, header=True, spark=None):
+def get_csv_file_details(dbutils, file_path, id_col=None, header=True, spark=None):
     """Function returns a dictionary that details
     general metadata for a csv file
     Parameters
