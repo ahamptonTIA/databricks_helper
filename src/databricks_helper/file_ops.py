@@ -357,3 +357,41 @@ def sql_query_to_file(spark, sql_str, out_dir, out_name, file_type='csv'):
                                 file_type=file_type)
     return out_file
 #---------------------------------------------------------------------------------- 
+def upsert_csv(df, output_path, upsert_columns):
+    """
+    Upsert a Pandas DataFrame to a CSV file.
+
+    Parameters
+    ----------
+    df : Pandas DataFrame
+        The DataFrame to upsert.
+    output_path : str
+        The path to the CSV file to upsert to.
+    upsert_columns : list of str
+        The columns to use for upserting.
+
+    Returns
+    -------
+    output_path : str
+        The output file path
+    """
+    if not output_path.endswith('.csv'):
+        output_path = output_path + '.csv'
+    # Check if the CSV file exists
+    if not os.path.exists(output_path):
+        # Write the DataFrame to the CSV file
+        df.to_csv(output_path)
+    else:
+        # Read the CSV file into a DataFrame
+        existing_df = pd.read_csv(output_path)
+
+        # Append the DataFrames
+        existing_df = existing_df.append(df, ignore_index=True)
+
+        # Drop duplicates based on the upsert columns
+        existing_df.drop_duplicates(subset=upsert_columns, inplace=True)
+
+        # Write the merged DataFrame to the CSV file
+        existing_df.to_csv(output_path)
+    return(output_path)
+#---------------------------------------------------------------------------------- 
