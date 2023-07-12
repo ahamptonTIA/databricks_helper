@@ -59,7 +59,7 @@ def get_md5_hash(file):
             f_hash.update(chunk)
     return f_hash.hexdigest() 
 #----------------------------------------------------------------------------------
-def get_csv_file_details(dbutils, file_path, id_col, spark=None):
+def get_csv_file_details(dbutils, file_path, id_col, header=True, spark=None):
     """Function returns a dictionary that details
     general metadata for a csv file
     Parameters
@@ -96,8 +96,9 @@ def get_csv_file_details(dbutils, file_path, id_col, spark=None):
     modified_date = datetime.fromtimestamp(statinfo.st_mtime).isoformat()
 
     # read the csv data into a spark dataframe
-    sdf = spark.read.csv(f.path, header=True)
+    sdf = spark.read.csv(f.path, header=header)
 
+       
     # create dictionary to store the metadata
     file_meta = {
                     'file_name': f.name,
@@ -105,11 +106,13 @@ def get_csv_file_details(dbutils, file_path, id_col, spark=None):
                     'file_size_memory_unit': get_byte_units(int(f.size)),
                     'record_qty': f'{sdf.count():,}',   
                     'column_qty': f'{len(sdf.columns):,}',   
-                    f'{id_col}_qty': f'{sdf.select(id_col).distinct().count():,}',
                     'file_md5_hash': get_md5_hash(os_fp),
                     'created' : create_date,
                     'modified' : modified_date
                 }    
+
+    if bool(id_col) and header=True:
+        file_meta[f'{id_col}_qty'] = f'{sdf.select(id_col).distinct().count():,}'
     return file_meta 
 #---------------------------------------------------------------------------------- 
 def get_csv_file_details_mcp(dbutils, files, id_col, n_cores=None, spark=None):   
