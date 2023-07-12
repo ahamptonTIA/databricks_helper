@@ -380,7 +380,7 @@ def upsert_csv(df, output_path, upsert_columns):
     # Check if the CSV file exists
     if not os.path.exists(output_path):
         # Write the DataFrame to the CSV file
-        df.to_csv(output_path)
+        df.to_csv(output_path, index=False)
     else:
         # Read the CSV file into a DataFrame
         existing_df = pd.read_csv(output_path)
