@@ -357,7 +357,7 @@ def sql_query_to_file(spark, sql_str, out_dir, out_name, file_type='csv'):
                                 file_type=file_type)
     return out_file
 #---------------------------------------------------------------------------------- 
-def upsert_csv(df, output_path, upsert_columns):
+def pandas_upsert_csv(df, output_path, upsert_columns, keep='last'):
     """
     Upsert a Pandas DataFrame to a CSV file.
 
@@ -369,7 +369,10 @@ def upsert_csv(df, output_path, upsert_columns):
         The path to the CSV file to upsert to.
     upsert_columns : list of str
         The columns to use for upserting.
-
+    keep : str or False boolean 
+        Pandas drop duplicate otions to keep rows.
+        Options include 'first', 'last', or False
+        Defualt: 'last'
     Returns
     -------
     output_path : str
@@ -389,7 +392,7 @@ def upsert_csv(df, output_path, upsert_columns):
         existing_df = existing_df.append(df, ignore_index=True)
 
         # Drop duplicates based on the upsert columns
-        existing_df.drop_duplicates(subset=upsert_columns, keep="last", inplace=True)
+        existing_df.drop_duplicates(subset=upsert_columns, keep=keep, inplace=True)
 
         # Write the merged DataFrame to the CSV file
         existing_df.to_csv(output_path, index=False)
