@@ -152,10 +152,10 @@ def get_csv_file_details_mcp(dbutils, files, id_col, n_cores=None, spark=None):
     print(f"Using {n_cores} cores's of {cpu_count()}")
     pool = ThreadPool(n_cores)
 
-    if not spark:
-        task_params = [(dbutils, f, id_col, get_spark_session()) for f in files]
+    if not spark: 
+        task_params = [(dbutils, f, id_col, True, get_spark_session()) for f in files]
     else:
-        task_params = [(dbutils, f, id_col, spark) for f in files]
+        task_params = [(dbutils, f, id_col, True, spark) for f in files]
     try:
         result = pool.starmap(get_csv_file_details, task_params)
         pool.close()
