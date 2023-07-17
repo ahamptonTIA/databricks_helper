@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from pyspark.sql import SparkSession
 # from databricks_helper import *
 #----------------------------------------------------------------------------------  
-def df_to_pandas_chunks(in_df, chunk_size=100000, keys=[], spark=spark):
+def df_to_pandas_chunks(in_df, chunk_size=100000, keys=[], spark=None):
     """
     Generator that sorts and then chunks a PySpark 
     or pandas DataFrame into DataFrames of the given
