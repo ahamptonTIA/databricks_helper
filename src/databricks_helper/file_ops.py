@@ -72,7 +72,7 @@ def get_csv_file_details(dbutils, file_path, id_col=None, header=True, spark=Non
         Column name for a column that holds an ID or
         set of values to count distinct values of. 
     spark : spark session object
-        Default, in not supplied a new session will be built
+        Default, if not supplied a new session will be built
     Returns
     ----------
     file_meta: dict
@@ -132,7 +132,7 @@ def get_csv_file_details_mcp(dbutils, files, id_col, n_cores=None, spark=None):
         available cores.
         Default, < 85% of the total cores available      
     spark : spark session object
-        Default, in not supplied a new session will be built
+        Default, if not supplied a new session will be built
     Returns
     ----------
     list of dictionaries
