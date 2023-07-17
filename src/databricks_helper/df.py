@@ -1,6 +1,6 @@
 import pandas as pd
 #----------------------------------------------------------------------------------  
-def df_to_pandas_chunks(df, chunk_size=100000, keys=[], spark=None):
+def df_to_pandas_chunks(df, chunk_size=100000, keys=[]):
     """
     Generator that sorts and then chunks a PySpark 
     or pandas DataFrame into DataFrames of the given
@@ -16,9 +16,6 @@ def df_to_pandas_chunks(df, chunk_size=100000, keys=[], spark=None):
         Column name or list of column names to sort 
         a dataframe on before chunking.
         Default, None - Sorting will not be applied
-    spark : spark session object
-        Default, if not supplied a new session will be built
-
     Returns
     -------
     generator : A generator that yields chunks of pandas DataFrames.
@@ -28,13 +25,14 @@ def df_to_pandas_chunks(df, chunk_size=100000, keys=[], spark=None):
         if not isinstance(keys, list):
             keys = [keys]
             
-    # convert pandas dataframs to pyspark
+    # sort and yield chunked pandas dataframes from pyspark
     if not isinstance(df, pd.DataFrame):
         df = df.orderBy(keys)
         for i in range(0, df.count(), chunk_size):
             chunk = df.toPandas()[i:i + chunk_size]
             yield chunk
     else:
+        # sort and yield chunked pandas dataframes 
         df = df.sort_values(by=keys)
         for i in range(0, len(df), chunksize):
             chunk = df[i:i + chunksize]
