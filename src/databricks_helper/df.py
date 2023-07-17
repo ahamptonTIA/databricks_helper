@@ -36,7 +36,9 @@ def df_to_pandas_chunks(in_df, chunk_size=100000, keys=[], spark=None):
         df = in_df
     # if a key was supplied, sort the dataframe
     if bool(key):
-        df = df.orderBy([key])
+        if not isinstance(keys, list):
+            keys = [keys]
+        df = df.orderBy([keys])
 
     for i in range(0, df.count(), chunk_size):
         chunk = df.toPandas()[i:i + chunk_size]
