@@ -1,10 +1,6 @@
-import os, re, uuid
 import pandas as pd
-from datetime import datetime, timezone
-from pyspark.sql import SparkSession
-from databricks_helper import dbfs_path, file_ops
 #----------------------------------------------------------------------------------  
-def df_to_pandas_chunks(in_df, chunk_size=100000, keys=[], spark=None):
+def df_to_pandas_chunks(df, chunk_size=100000, keys=[], spark=None):
     """
     Generator that sorts and then chunks a PySpark 
     or pandas DataFrame into DataFrames of the given
@@ -12,7 +8,7 @@ def df_to_pandas_chunks(in_df, chunk_size=100000, keys=[], spark=None):
 
     Parameters
     ----------
-    in_df : pd.DataFrame or pyspark.sql.DataFrame
+    df : pd.DataFrame or pyspark.sql.DataFrame
         The dataframe to sort and chunk.
     chunk_size: int
         The max size of each chunk
@@ -27,20 +23,20 @@ def df_to_pandas_chunks(in_df, chunk_size=100000, keys=[], spark=None):
     -------
     generator : A generator that yields chunks of pandas DataFrames.
     """      
-    # convert pandas dataframs to pyspark
-    if isinstance(in_df, pd.DataFrame):
-        if not spark:
-            spark = file_ops.get_spark_session()
-        df = spark.createDataFrame(in_df) 
-    else:
-        df = in_df
     # if a key was supplied, sort the dataframe
     if bool(keys):
         if not isinstance(keys, list):
             keys = [keys]
+            
+    # convert pandas dataframs to pyspark
+    if not isinstance(df, pd.DataFrame):
         df = df.orderBy(keys)
-
-    for i in range(0, df.count(), chunk_size):
-        chunk = df.toPandas()[i:i + chunk_size]
-        yield chunk
-#----------------------------------------------------------------------------------  
+        for i in range(0, df.count(), chunk_size):
+            chunk = df.toPandas()[i:i + chunk_size]
+            yield chunk
+    else:
+        df = df.sort_values(by=keys)
+        for i in range(0, len(df), chunksize):
+            chunk = df[i:i + chunksize]
+            yield chunk
+#---------------------------------------------------------------------------------- 
