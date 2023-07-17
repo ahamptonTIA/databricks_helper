@@ -82,10 +82,10 @@ def get_csv_file_details(dbutils, file_path, id_col=None, header=True, spark=Non
         spark = get_spark_session()
         
     # ensure dbfs file path
-    file_path = dbfs_path.to_dbfs_path(file_path)
+    file_path = to_dbfs_path(file_path)
  
     # get the local/os file path
-    os_fp = dbfs_path.db_path_to_local(file_path)
+    os_fp = db_path_to_local(file_path)
     
     # get a dbruntime.dbutils.FileInfo object
     f = dbutils.fs.ls(file_path)[0]
@@ -296,7 +296,7 @@ def export_dataframe(in_df, out_dir, out_name, file_type='csv'):
         df = in_df
 
     # get the api/os file path
-    out_dir = dbfs_path.db_path_to_local(out_dir)
+    out_dir = db_path_to_local(out_dir)
 
     # remove all extra file extensions 
     if out_name.endswith(file_type):
