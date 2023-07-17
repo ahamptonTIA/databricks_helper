@@ -30,7 +30,7 @@ def df_to_pandas_chunks(in_df, chunk_size=100000, keys=[], spark=None):
     # convert pandas dataframs to pyspark
     if isinstance(in_df, pd.DataFrame):
         if not spark:
-            spark = file_ops.get_spark_session()
+            spark = get_spark_session()
         df = spark.createDataFrame(in_df) 
     else:
         df = in_df
