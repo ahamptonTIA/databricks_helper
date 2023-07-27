@@ -385,7 +385,7 @@ def pandas_upsert_csv(df, output_path, upsert_columns, keep='last'):
     if output_path.endswith('.csv'):
         output_path = ''.join([x for x in output_path.split('.csv') if bool(x)])
     # set the file path
-    output_path = f'{output_path}'.csv'
+    output_path = f'{output_path}.csv'
     
     # Check if the CSV file exists
     if not os.path.exists(output_path):
