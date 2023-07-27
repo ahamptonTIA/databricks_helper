@@ -299,8 +299,8 @@ def export_dataframe(in_df, out_dir, out_name, file_type='csv'):
     out_dir = dbfs_path.db_path_to_local(out_dir)
 
     # remove all extra file extensions 
-    if out_name.endswith(file_type):
-        out_name = ''.join([x for x in out_name.split(file_type) if bool(x)])
+    if out_name.endswith(f'.{file_type}'):
+        out_name = ''.join([x for x in out_name.split(f'.{file_type}') if bool(x)])
 
     # set the file path
     out_name = f'{out_name}.{file_type}'
@@ -378,8 +378,15 @@ def pandas_upsert_csv(df, output_path, upsert_columns, keep='last'):
     output_path : str
         The output file path
     """
-    if not output_path.endswith('.csv'):
-        output_path = output_path + '.csv'
+    # if not output_path.endswith('.csv'):
+    #     output_path = output_path + '.csv'
+
+    # remove all extra file extensions 
+    if output_path.endswith('.csv'):
+        output_path = ''.join([x for x in output_path.split('.csv') if bool(x)])
+    # set the file path
+    output_path = f'{output_path}'.csv'
+    
     # Check if the CSV file exists
     if not os.path.exists(output_path):
         # Write the DataFrame to the CSV file
