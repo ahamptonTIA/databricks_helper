@@ -37,8 +37,8 @@ def df_to_pandas_chunks(df, chunk_size=100000, keys=[]):
     else:
         # sort and yield chunked pandas dataframes 
         df = df.sort_values(by=keys)
-        for i in range(0, len(df), chunksize):
-            chunk = df[i:i + chunksize]
+        for i in range(0, len(df), chunk_size):
+            chunk = df[i:i + chunk_size]
             yield chunk
             
 
