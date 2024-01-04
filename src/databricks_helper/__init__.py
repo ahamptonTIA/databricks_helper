@@ -1,7 +1,7 @@
-# __version__ = "0.0.2"
+__version__ = "0.0.2"
 
-# from .file_ops import *
-# from .dbfs_path import *
-# from .df import *
-# from .dtype import *
+from .file_ops import *
+from .dbfs_path import *
+from .df import *
+from .dtype import *
 
