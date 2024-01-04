@@ -23,7 +23,7 @@ def eval_nested_string_literals(data):
         data = json.loads(data)  # Parse JSON string if needed
     for k, v in data.items():
         if isinstance(v, dict):
-            self.eval_nested_string_literals(v)  # Recursive call for nested dictionaries
+            eval_nested_string_literals(v)  # Recursive call for nested dictionaries
         else:
             try:
                 x = ast.literal_eval(v)
