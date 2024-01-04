@@ -1,5 +1,8 @@
 import pandas as pd
+import openpyxl
+
 #----------------------------------------------------------------------------------  
+
 def df_to_pandas_chunks(df, chunk_size=100000, keys=[]):
     """
     Generator that sorts and then chunks a PySpark 
@@ -37,4 +40,64 @@ def df_to_pandas_chunks(df, chunk_size=100000, keys=[]):
         for i in range(0, len(df), chunksize):
             chunk = df[i:i + chunksize]
             yield chunk
+            
+
 #---------------------------------------------------------------------------------- 
+
+def remove_pd_df_newlines(df, replace_char=''):
+    """Removes newline characters ('\n') from all string 
+    columns in a pandas DataFrame with the given replace 
+    character.
+
+    Parameters:
+    ----------
+    df : pandas.DataFrame
+        The DataFrame to process.
+    replace_char  : str, optional
+        String value to replace newline character with.
+        Defaults to single space (' ') .
+    Returns:
+    -------
+    df : pandas.DataFrame
+        The DataFrame with newlines removed from string columns.
+    """
+
+    df = df.replace('\n',replace_char, regex=True)
+    return df
+
+#---------------------------------------------------------------------------------- 
+
+def xlsx_tabs_to_pd_dataframes(path, header_idx=0, rm_newlines=True):
+    """
+    Read all sheets/tabs from an excel file into a list of 
+    pandas DataFrames.
+
+    Parameters:
+    ----------
+    path : str
+        Path to the Excel file.
+    header_idx : int, optional
+        Row index to use as column names (0-indexed).
+        Defaults to 0.
+    rm_newlines : Boolean, optional
+        Option to remove newline characters ('\n') from 
+        all string columns.
+        Defaults to True.
+    Returns:
+    -------
+    list of pandas.DataFrame
+        A list containing a DataFrame for each worksheet in 
+        the Excel file.
+    """
+
+    dfs = {}
+    xls = pd.ExcelFile(path)
+
+    # Iterate through each worksheet and read its data into a DataFrame
+    for sheet_name in xls.sheet_names:
+        df = pd.read_excel(path, sheet_name=sheet_name, header=header_idx)
+        if rm_newlines:
+            df = remove_pd_df_newlines(df)
+        dfs[sheet_name] = df
+
+    return dfs
