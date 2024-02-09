@@ -357,7 +357,7 @@ def sql_query_to_file(spark, sql_str, out_dir, out_name, file_type='csv'):
                                 file_type=file_type)
     return out_file
 #---------------------------------------------------------------------------------- 
-def pandas_upsert_csv(df, output_path, upsert_columns, keep='last'):
+def pandas_upsert_csv(df, output_path, upsert_columns, keep='last', mode='upsert'):
     """
     Upsert a Pandas DataFrame to a CSV file.
 
@@ -373,6 +373,10 @@ def pandas_upsert_csv(df, output_path, upsert_columns, keep='last'):
         Pandas drop duplicate otions to keep rows.
         Options include 'first', 'last', or False
         Defualt: 'last'
+    mode : str 
+        Option to upsert or overwite values based on the upsert_columns. 
+        Valid options include 'upsert' and 'overwrite'
+        Defualt: 'upsert'
     Returns
     -------
     output_path : str
@@ -386,7 +390,7 @@ def pandas_upsert_csv(df, output_path, upsert_columns, keep='last'):
         output_path = ''.join([x for x in output_path.split('.csv') if bool(x)])
     # set the file path
     output_path = f'{output_path}.csv'
-    
+
     # Check if the CSV file exists
     if not os.path.exists(output_path):
         # Write the DataFrame to the CSV file
@@ -395,11 +399,17 @@ def pandas_upsert_csv(df, output_path, upsert_columns, keep='last'):
         # Read the CSV file into a DataFrame
         existing_df = pd.read_csv(output_path)
 
-        # Append the DataFrames
-        existing_df = pd.concat([existing_df, df], ignore_index=True)
-
-        # Drop duplicates based on the upsert columns
-        existing_df.drop_duplicates(subset=upsert_columns, keep=keep, inplace=True)
+        if mode =='overwrite': 
+            matched_indices = existing_df[(existing_df[upsert_columns] == df[upsert_columns]).all(axis=1)].index
+            existing_df.drop(matched_indices, inplace=True)
+            
+            # Concat the DataFrames
+            existing_df = pd.concat([existing_df, df], ignore_index=True)
+        elif mode=='upsert': 
+            # Concat the DataFrames
+            existing_df = pd.concat([existing_df, df], ignore_index=True)
+            # Drop duplicates based on the upsert columns
+            existing_df.drop_duplicates(subset=upsert_columns, keep=keep, inplace=True)
 
         # Write the merged DataFrame to the CSV file
         existing_df.to_csv(output_path, index=False)
