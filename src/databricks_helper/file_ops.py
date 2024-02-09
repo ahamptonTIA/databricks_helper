@@ -396,7 +396,7 @@ def pandas_upsert_csv(df, output_path, upsert_columns, keep='last'):
         existing_df = pd.read_csv(output_path)
 
         # Append the DataFrames
-        existing_df = existing_df.append(df, ignore_index=True)
+        existing_df = pd.concat([existing_df, df], ignore_index=True)
 
         # Drop duplicates based on the upsert columns
         existing_df.drop_duplicates(subset=upsert_columns, keep=keep, inplace=True)
