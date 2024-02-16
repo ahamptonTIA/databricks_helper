@@ -1,4 +1,5 @@
 import os, re, math, uuid
+import zipfile, shutil, tempfile
 import hashlib
 import pandas as pd
 from datetime import datetime, timezone
@@ -414,4 +415,79 @@ def pandas_upsert_csv(df, output_path, upsert_columns, keep='last', mode='upsert
         # Write the merged DataFrame to the CSV file
         existing_df.to_csv(output_path, index=False)
     return(output_path)
+#---------------------------------------------------------------------------------- 
+def zip_files(files, output_directory=None, output_filename=None, remove_files=False):
+    """
+    Zips a list of files or a single file and optionally removes the original files. 
+    Temporary zip files are created then moved to ensure compatibility with the 
+    Databricks/Azure environment. 
+    
+    Parameters
+    ----------
+		files : list or str
+          A list of file paths or a single file path.
+		output_directory (str, optional): 
+            The directory to place the zip file.
+            Defaults to the directory containing the input files.
+		output_filename (str, optional): 
+            The name of the zip file.
+            Defaults to a generated name based on the input files.
+		remove_files (bool, optional):
+            True if the original files should be removed after zipping. 
+            Defaults to False.
+    Returns
+    -------
+		output_path : str
+            The path to the created zip file.
+	"""
+
+	# Handle single file and multiple files cases
+	if isinstance(files, str):
+		files = [files]
+
+	# Generate common base directory for the file(s)
+	if len(files) > 1:
+		base_dir = os.path.commonpath(files)
+		base_name = os.path.splitext(os.path.basename(base_dir))[0]
+	else:
+		base_dir = os.path.dirname(files[0])
+		filename = os.path.basename(files[0])
+		base_name, extension = os.path.splitext(filename)
+
+	# Determine output directory
+	if output_directory:
+		output_dir = output_directory
+	else:
+		output_dir = base_dir
+
+	# Construct default output filename
+	if output_filename:
+		if not output_filename.endswith('.zip'):
+			output_name = f"{output_filename}.zip"
+		else:
+			output_name = output_filename
+	else:
+		output_name = f"{base_name}.zip"
+
+	# Generate full output path
+	output_path = os.path.join(output_dir, output_name)
+
+    # create a temp zip file
+	with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as temp_file:
+		temp_path = temp_file.name
+
+		with zipfile.ZipFile(temp_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+			for file_path in files:
+				relative_path = os.path.relpath(file_path, base_dir)
+				zipf.write(file_path, relative_path)
+        # move the zip file from the temp loc to the output dir
+		shutil.move(temp_path, output_path)
+
+        # remove the orignial files is desired
+		if remove_files:
+			for file_path in files:
+				os.remove(file_path)
+
+		print(f'Output zip fiel saved to: {output_path}')
+		return output_path
 #---------------------------------------------------------------------------------- 
