@@ -116,8 +116,8 @@ def list_sub_dirs(dbutils, dir_path, recursive=False, ignore=['.parquet']):
         Sorted list of sub directories
     """
     sub_dirs = [p.path for p in dbutils.fs.ls(dir_path) 
-                if p.isDir() and p.path != dir_path and 
-                os.path.splitext(p.path.lower())[1] not in ignore]
+                if p.isDir() and p.path != dir_path and
+                not p.path.lower().endswith(tuple(ignore))]
     if recursive:
         for sd in sub_dirs:
             sub_dirs = sub_dirs + list_sub_dirs(dbutils, sd, recursive)
