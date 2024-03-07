@@ -95,7 +95,7 @@ def list_file_paths(dbutils, dir_path, ext='csv', path_type='os'):
     except Exception as e:
         raise e
 #---------------------------------------------------------------------------------- 
-def list_sub_dirs(dbutils, dir_path, recursive=False):
+def list_sub_dirs(dbutils, dir_path, recursive=False, ignore=['.parquet']):
     """Function lists sub directories of a given 
     DataBricks/dbfs file path. 
     Parameters
@@ -107,13 +107,17 @@ def list_sub_dirs(dbutils, dir_path, recursive=False):
     recursive : Boolean
         Boolean value for recursively list sub directories
         Default, False 
+    ignore : list
+        List of file types that are actaully folders to ignore
+        Default, ['.parquet']
     Returns
     ----------
     sub_dirs : list
         Sorted list of sub directories
     """
     sub_dirs = [p.path for p in dbutils.fs.ls(dir_path) 
-                if p.isDir() and p.path != dir_path]
+                if p.isDir() and p.path != dir_path and 
+                os.path.splitext(p.path.lower())[1] not in ignore]
     if recursive:
         for sd in sub_dirs:
             sub_dirs = sub_dirs + list_sub_dirs(dbutils, sd, recursive)
