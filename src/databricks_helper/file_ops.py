@@ -1,4 +1,4 @@
-import os, re, math, uuid
+import os, re, math, uuid, difflib
 import zipfile, shutil, tempfile
 import hashlib
 import pandas as pd
@@ -7,7 +7,6 @@ from multiprocessing.pool import ThreadPool
 from multiprocessing import cpu_count
 from pyspark.sql import SparkSession
 from databricks_helper import dbfs_path
-
 #----------------------------------------------------------------------------------
 def get_spark_session():
     """Function creates a new spark session
@@ -358,39 +357,70 @@ def sql_query_to_file(spark, sql_str, out_dir, out_name, file_type='csv'):
                                 file_type=file_type)
     return out_file
 #---------------------------------------------------------------------------------- 
+def normalize_dataframe(existing_df, df):
+    """
+    Normalize a DataFrame by renaming columns, ensuring consistent capitalization,
+    removing leading/trailing spaces, and attempting to match data types.
+
+    Parameters
+    ----------
+    existing_df : pandas.DataFrame
+        The existing DataFrame to use as a reference for normalization.
+    df : pandas.DataFrame
+        The DataFrame to normalize.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The normalized DataFrame.
+    """
+    # Create a mapping of existing column names to their lowercase versions
+    existing_columns_mapping = {col.strip().lower(): col for col in existing_df.columns}
+
+    # Normalize column names in the second DataFrame
+    df.columns = [existing_columns_mapping[difflib.get_close_matches(col.lower().strip(), 
+                                           existing_columns_mapping.keys(), n=1, cutoff=0.8)[0]] 
+                  if col.lower().strip() in existing_columns_mapping.keys() else col.strip() 
+                  for col in df.columns]
+
+    # Ensure consistent data types
+    for col in df.columns:
+        try:
+            df[col] = pd.to_numeric(df[col])
+        except ValueError:
+            pass  # Ignore errors and proceed
+
+    return df
+#----------------------------------------------------------------------------------     
 def pandas_upsert_csv(df, output_path, upsert_columns, keep='last', mode='upsert'):
     """
     Upsert a Pandas DataFrame to a CSV file.
 
     Parameters
     ----------
-    df : Pandas DataFrame
+    df : pandas.DataFrame
         The DataFrame to upsert.
     output_path : str
         The path to the CSV file to upsert to.
     upsert_columns : list of str
         The columns to use for upserting.
     keep : str or False boolean 
-        Pandas drop duplicate otions to keep rows.
-        Options include 'first', 'last', or False
-        Defualt: 'last'
+        The option to keep rows when duplicates are found.
+        Valid options: 'first', 'last', False.
+        Default: 'last'.
     mode : str 
-        Option to upsert or overwite values based on the upsert_columns. 
-        Valid options include 'upsert' and 'overwrite'
-        Defualt: 'upsert'
+        The option to upsert or overwrite values based on upsert_columns.
+        Valid options: 'upsert', 'overwrite'.
+        Default: 'upsert'.
+
     Returns
     -------
-    output_path : str
-        The output file path
+    str
+        The path to the output CSV file.
     """
-    # if not output_path.endswith('.csv'):
-    #     output_path = output_path + '.csv'
-
-    # remove all extra file extensions 
-    if output_path.endswith('.csv'):
-        output_path = ''.join([x for x in output_path.split('.csv') if bool(x)])
-    # set the file path
-    output_path = f'{output_path}.csv'
+    # Ensure output_path ends with '.csv'
+    if not output_path.endswith('.csv'):
+        output_path += '.csv'
 
     # Check if the CSV file exists
     if not os.path.exists(output_path):
@@ -400,21 +430,30 @@ def pandas_upsert_csv(df, output_path, upsert_columns, keep='last', mode='upsert
         # Read the CSV file into a DataFrame
         existing_df = pd.read_csv(output_path)
 
-        if mode =='overwrite': 
-            matched_indices = existing_df[(existing_df[upsert_columns] == df[upsert_columns]).all(axis=1)].index
-            existing_df.drop(matched_indices, inplace=True)
-            
-            # Concat the DataFrames
-            existing_df = pd.concat([existing_df, df], ignore_index=True)
-        elif mode=='upsert': 
-            # Concat the DataFrames
-            existing_df = pd.concat([existing_df, df], ignore_index=True)
+        # Normalize column names and data types for both DataFrames
+        df = normalize_dataframe(existing_df, df)
+
+        # Reset index of both DataFrames
+        existing_df.reset_index(drop=True, inplace=True)
+        df.reset_index(drop=True, inplace=True)
+
+        if mode =='overwrite':
+            # Create a mask to filter out rows from existing_df where values in upsert_columns of df are not present
+            mask = existing_df[upsert_columns].apply(tuple, axis=1).isin(df[upsert_columns].apply(tuple, axis=1))
+            # Filter existing_df based on the mask
+            rtn_df = existing_df[~mask]
+            # Concatenate the filtered DataFrame with df
+            rtn_df = pd.concat([rtn_df, df], ignore_index=True)
+        elif mode == 'upsert':
+            # Concatenate the DataFrames under the upsert block
+            rtn_df = pd.concat([existing_df, df], ignore_index=True)
             # Drop duplicates based on the upsert columns
-            existing_df.drop_duplicates(subset=upsert_columns, keep=keep, inplace=True)
+            rtn_df.drop_duplicates(subset=upsert_columns, keep=keep, inplace=True)
 
         # Write the merged DataFrame to the CSV file
-        existing_df.to_csv(output_path, index=False)
-    return(output_path)
+        rtn_df.to_csv(output_path, index=False)
+
+    return output_path
 #---------------------------------------------------------------------------------- 
 def zip_files(files, output_directory=None, output_filename=None, remove_files=False):
     """
