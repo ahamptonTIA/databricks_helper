@@ -30,7 +30,8 @@ setuptools.setup(
     package_dir={'':'src'},                 # directory of the source code of the package
     packages=setuptools.find_packages(where="src"), # list of all python modules to be installed
     install_requires=[           # package dependencies
-                     'openpyxl'
+                     'openpyxl',
+                     'numpy<=1.18.1'
 
                     ]
     )
