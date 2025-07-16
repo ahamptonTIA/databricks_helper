@@ -28,8 +28,10 @@ def to_dbfs_path(path):
         DataBricks dbfs file storage path
     """        
     if path.startswith(r'/mnt'):
-        path = f"{r'dbfs:'}{path}"        
-    return re.sub(r'^(/dbfs)', r'dbfs:', path)   
+        path = f"{r'dbfs:'}{path}" 
+    if not path.startswith('/Volumes') and path.startswith('/dbfs'):
+        path = re.sub(r'^(/dbfs)', r'dbfs:', path)         
+    return path 
 #----------------------------------------------------------------------------------    
 def path_exists(dbutils, path):
     """Function returns Boolean, true if a DataBricks/dbfs file path exists or
