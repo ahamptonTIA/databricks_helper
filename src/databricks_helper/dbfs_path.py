@@ -84,7 +84,11 @@ def list_file_paths(dbutils, dir_path, ext='csv', path_type='os'):
         if not path_exists(dbutils, dir_path):
             print(f'Directory not found: {dir_path}')
             return []
-        if path_type =='os':
+        if dir_path.startswith(r'/Volumes/'):
+            fps = [f.path
+                    for f in os.scandir(db_path_to_local(dir_path))
+                    if ((f.path).lower()).endswith(f'.{ext.lower()}')]            
+        elif path_type =='os':
             fps = [db_path_to_local(f.path) 
                     for f in dbutils.fs.ls(dir_path) 
                     if ((f.path).lower()).endswith(f'.{ext.lower()}')]
