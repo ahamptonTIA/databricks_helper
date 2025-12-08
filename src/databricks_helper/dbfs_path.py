@@ -102,32 +102,60 @@ def list_file_paths(dbutils, dir_path, ext='csv', path_type='os'):
         raise e
 #---------------------------------------------------------------------------------- 
 def list_sub_dirs(dbutils, dir_path, recursive=False, ignore=['.parquet']):
-    """Function lists sub directories of a given 
-    DataBricks/dbfs file path. 
-    Parameters
-    ----------
-    dbutils: dbutils object
-        DataBricks notebook dbutils object
-    dir_path : str
-        DataBricks dbfs file storage path
-    recursive : Boolean
-        Boolean value for recursively list sub directories
-        Default, False 
-    ignore : list
-        List of file types that are actaully folders to ignore
-        Default, ['.parquet']
-    Returns
-    ----------
-    sub_dirs : list
-        Sorted list of sub directories
-    """
-    sub_dirs = [p.path for p in dbutils.fs.ls(dir_path) 
-                if p.isDir() and p.path != dir_path and
-                not os.path.abspath(p.path).lower().endswith(tuple(ignore))]
-    if recursive:
-        for sd in sub_dirs:
-            sub_dirs = sub_dirs + list_sub_dirs(dbutils, sd, recursive)
-    return sorted(sub_dirs)
+	"""Function lists sub directories of a given 
+	DataBricks/dbfs file path. 
+	Parameters
+	----------
+	dbutils: dbutils object
+		DataBricks notebook dbutils object
+	dir_path : str
+		DataBricks dbfs file storage path
+	recursive : Boolean
+		Boolean value for recursively list sub directories
+		Default, False 
+	ignore : list
+		List of file types that are actaully folders to ignore
+		Default, ['.parquet']
+	Returns
+	----------
+	sub_dirs : list
+		Sorted list of sub directories
+	"""
+	
+	# Convert to a standardized path format (as done in the first function)
+	dir_path = to_dbfs_path(dir_path)
+	
+	# Check if it's a Volume path
+	if dir_path.startswith(r'/Volumes/'):
+		# 1. Convert the Databricks Volume path to its local OS path equivalent
+		local_dir = db_path_to_local(dir_path)
+		
+		# os.scandir to list contents
+		sub_dirs = []
+		for entry in os.scandir(local_dir):
+			# Check if it's a directory and ignore hidden/special paths if necessary
+			if entry.is_dir():
+				# Convert the local path back to the Databricks Volume path format 
+				# before adding it to the list
+				volume_path = to_dbfs_path(entry.path) 
+				
+				# Check for the ignore list on the final path
+				if not os.path.abspath(volume_path).lower().endswith(tuple(ignore)):
+					sub_dirs.append(volume_path)
+
+	else:
+		# Use dbutils.fs.ls for standard DBFS paths
+		sub_dirs = [p.path for p in dbutils.fs.ls(dir_path) 
+					if p.isDir() and p.path != dir_path and
+					not os.path.abspath(p.path).lower().endswith(tuple(ignore))]
+	
+	# --- The rest of the function remains the same ---
+	if recursive:
+		# Recursion must now use the updated function which supports Volumes
+		for sd in sub_dirs:
+			sub_dirs = sub_dirs + list_sub_dirs(dbutils, sd, recursive)
+			
+	return sorted(sub_dirs)
 #---------------------------------------------------------------------------------- 
 def create_dir(dbutils, out_dir):
     """Function creates a directory if it does not exist. 
