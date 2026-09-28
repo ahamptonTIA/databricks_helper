@@ -6,7 +6,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='databricks_helper',               # name of the package
-    version='0.0.2',                        # release version
+    version='0.0.3',                        # release version
     author='ahamptonTIA',                   # org/author
     description=\
         '''
@@ -23,14 +23,19 @@ setuptools.setup(
                         'License :: OSI Approved :: MIT License',
                         'Operating System :: OS Independent',
                         'Natural Language :: English',
-                        'Programming Language :: Python :: 3.7',
+                        'Programming Language :: Python :: 3.9',
+                        'Programming Language :: Python :: 3.10',
+                        'Programming Language :: Python :: 3.11',
+                        'Programming Language :: Python :: 3.12',
                         ],                                      
-    python_requires='>=3.7',                # minimum version requirement of the package
+    python_requires='>=3.9',                # minimum version requirement of the package
     #py_modules=['databricks_helper'],      # name of the python package     
     package_dir={'':'src'},                 # directory of the source code of the package
     packages=setuptools.find_packages(where="src"), # list of all python modules to be installed
     install_requires=[           # package dependencies
                         # 'pandas>=1.4.4',
-                        'openpyxl',
-                    ]
+                    ],
+    extras_require={
+        'excel': ['openpyxl'],
+    }
     )

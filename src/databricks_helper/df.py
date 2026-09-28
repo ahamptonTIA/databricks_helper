@@ -1,5 +1,4 @@
 import pandas as pd
-import openpyxl
 
 #----------------------------------------------------------------------------------  
 
@@ -90,6 +89,13 @@ def xlsx_tabs_to_pd_dataframes(path, header_idx=0, rm_newlines=True):
         the Excel file.
     """
 
+    try:
+        import openpyxl
+    except ImportError:
+        raise ImportError(
+            "openpyxl is required for Excel support. "
+            "Install it with: pip install databricks_helper[excel]"
+        )
     dfs = {}
     xls = pd.ExcelFile(path)
 
