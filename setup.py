@@ -1,4 +1,3 @@
-
 import setuptools
 
 with open('README.md', 'r') as fh:
@@ -30,7 +29,7 @@ setuptools.setup(
     package_dir={'':'src'},                 # directory of the source code of the package
     packages=setuptools.find_packages(where="src"), # list of all python modules to be installed
     install_requires=[           # package dependencies
-                        # 'pandas>=1.4.4',
+                        'pandas<3.0.0',     # PySpark does not yet fully support pandas >= 3.0.0
                         'openpyxl',
                     ]
     )
