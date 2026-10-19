@@ -87,29 +87,45 @@ def get_csv_file_details(dbutils, file_path, id_col=None, header=True, spark=Non
     # get the local/os file path
     os_fp = dbfs_path.db_path_to_local(file_path)
     
-    # get a dbruntime.dbutils.FileInfo object
-    f = dbutils.fs.ls(file_path)[0]
-
     # get date time file metadata
     statinfo = os.stat(os_fp)
     create_date = datetime.fromtimestamp(statinfo.st_ctime).isoformat()
     modified_date = datetime.fromtimestamp(statinfo.st_mtime).isoformat()
 
-    # read the csv data into a spark dataframe
-    sdf = spark.read.csv(f.path, header=header)
+    # check if path is a directory (e.g. Spark-output CSV with part files)
+    is_dir = os.path.isdir(os_fp)
 
-       
-    # create dictionary to store the metadata
-    file_meta = {
-                    'file_name': f.name,
-                    'file_size_bytes': f'{f.size:,}',
-                    'file_size_memory_unit': get_byte_units(int(f.size)),
-                    'record_qty': f'{sdf.count():,}',   
-                    'column_qty': f'{len(sdf.columns):,}',   
-                    'file_md5_hash': get_md5_hash(os_fp),
-                    'created' : create_date,
-                    'modified' : modified_date
-                }    
+    if is_dir:
+        # Spark-output directory: sum part-file sizes, read directory natively
+        entries = dbutils.fs.ls(file_path)
+        total_size = sum(entry.size for entry in entries if entry.name.startswith('part-'))
+        sdf = spark.read.csv(file_path, header=header)
+
+        file_meta = {
+                        'file_name': os.path.basename(os_fp.rstrip('/')),
+                        'file_size_bytes': f'{total_size:,}',
+                        'file_size_memory_unit': get_byte_units(int(total_size)),
+                        'record_qty': f'{sdf.count():,}',
+                        'column_qty': f'{len(sdf.columns):,}',
+                        'file_md5_hash': 'N/A (partitioned directory)',
+                        'created' : create_date,
+                        'modified' : modified_date
+                    }
+    else:
+        # regular single CSV file: original behaviour
+        f = dbutils.fs.ls(file_path)[0]
+        sdf = spark.read.csv(f.path, header=header)
+
+        file_meta = {
+                        'file_name': f.name,
+                        'file_size_bytes': f'{f.size:,}',
+                        'file_size_memory_unit': get_byte_units(int(f.size)),
+                        'record_qty': f'{sdf.count():,}',
+                        'column_qty': f'{len(sdf.columns):,}',
+                        'file_md5_hash': get_md5_hash(os_fp),
+                        'created' : create_date,
+                        'modified' : modified_date
+                    }    
 
     if bool(id_col) and header:
         file_meta[f'{id_col}_qty'] = f'{sdf.select(id_col).distinct().count():,}'
@@ -156,6 +172,7 @@ def get_csv_file_details_mcp(dbutils, files, id_col, n_cores=None, spark=None):
         task_params = [(dbutils, f, id_col, True, get_spark_session()) for f in files]
     else:
         task_params = [(dbutils, f, id_col, True, spark) for f in files]
+    result = []  # initialise before try to prevent UnboundLocalError
     try:
         result = pool.starmap(get_csv_file_details, task_params)
         pool.close()
